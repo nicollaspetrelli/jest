@@ -1,0 +1,21 @@
+#!/bin/bash
+CONTAINER_NAME="workshop-testes-jest"
+
+HAS_CONTAINER=$(docker ps --filter "name=${CONTAINER_NAME}" --format ".")
+if [ "${HAS_CONTAINER}" == "." ]; then
+  # Container está rodando
+  docker exec -it ${CONTAINER_NAME} sh
+else
+  docker inspect --type=image "${CONTAINER_NAME}" >/dev/null 2>&1
+  # Imagem não existe
+  if [ $? -ne 0 ]; then
+    docker build -t ${CONTAINER_NAME} .
+  fi
+  docker run --rm -it \
+    -v ${PWD}:/app \
+    -w /app \
+    -p 3000:3000 \
+    --name ${CONTAINER_NAME} \
+    -e PORT=3000 \
+    ${CONTAINER_NAME}
+fi
